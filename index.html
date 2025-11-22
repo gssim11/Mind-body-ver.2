@@ -69,6 +69,10 @@
             font-weight: 700;
             color: #111827;
         }
+        /* Section Colors */
+        .text-blue-title { color: #2563eb; }
+        .bg-blue-icon { background-color: #eff6ff; color: #2563eb; }
+        .text-indigo-title { color: #4f46e5; } /* BMI용 */
 
         /* Inputs */
         .input-group label {
@@ -86,9 +90,6 @@
             background-color: #f9fafb;
             transition: all 0.2s;
             font-size: 0.95rem;
-            /* 높이 고정 (캡처 시 레이아웃 흔들림 방지) */
-            min-height: 48px; 
-            box-sizing: border-box;
         }
         .input-field:focus {
             outline: none;
@@ -245,29 +246,32 @@
                 </div>
                 <div class="space-y-4">
                     <div class="input-group">
-                        <label>이름</label>
+                        <label>이름 <span class="text-gray-400 text-xs font-normal">(선택)</span></label>
                         <input type="text" id="name" class="input-field" placeholder="성명 입력">
                     </div>
                     <div class="input-group">
-                        <label>평가 날짜</label>
+                        <label>평가 날짜 <span class="text-gray-400 text-xs font-normal">(선택)</span></label>
                         <input type="text" id="eval-date" class="input-field bg-gray-50" readonly>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="input-group">
-                            <label>키 (cm)</label>
-                            <input type="text" inputmode="decimal" id="height" class="input-field text-center" placeholder="175">
+                            <label class="text-blue-600">키 (cm) *</label>
+                            <input type="text" inputmode="decimal" id="height" class="input-field border-blue-300" placeholder="175">
+                             <p class="error-msg" id="height-error">키를 입력해주세요.</p>
                         </div>
                         <div class="input-group">
-                            <label>몸무게 (kg)</label>
-                            <input type="text" inputmode="decimal" id="weight" class="input-field text-center" placeholder="70">
+                            <label class="text-blue-600">몸무게 (kg) *</label>
+                            <input type="text" inputmode="decimal" id="weight" class="input-field border-blue-300" placeholder="70">
+                             <p class="error-msg" id="weight-error">몸무게를 입력해주세요.</p>
                         </div>
                     </div>
                     <div class="input-group">
-                        <label>만 나이</label>
-                        <input type="text" inputmode="decimal" id="age" class="input-field text-center" placeholder="25">
+                        <label class="text-blue-600">만 나이 *</label>
+                        <input type="text" inputmode="decimal" id="age" class="input-field border-blue-300" placeholder="25">
+                         <p class="error-msg" id="age-error">나이를 입력해주세요.</p>
                     </div>
                     <div class="input-group">
-                        <label>성별</label>
+                        <label class="text-blue-600">성별 *</label>
                         <div class="flex gap-3">
                             <label class="flex-1 cursor-pointer">
                                 <input type="radio" name="gender" value="male" class="peer sr-only">
@@ -278,9 +282,10 @@
                                 <div class="text-center py-2 border rounded-lg peer-checked:bg-pink-50 peer-checked:border-pink-500 peer-checked:text-pink-600 text-sm font-medium transition-all">여성</div>
                             </label>
                         </div>
+                        <p class="error-msg" id="gender-error">성별을 선택해주세요.</p>
                     </div>
                     <div class="input-group">
-                        <label>우세발 (Dominant)</label>
+                        <label>우세발 (Dominant) <span class="text-gray-400 text-xs font-normal">(선택)</span></label>
                         <div class="flex gap-3">
                             <label class="flex-1 cursor-pointer">
                                 <input type="radio" name="dominant-leg" value="right" checked class="peer sr-only">
@@ -293,9 +298,8 @@
                         </div>
                     </div>
                     <div class="input-group">
-                        <label class="text-blue-600">우세발 다리길이 (cm) *필수</label>
-                        <input type="text" inputmode="decimal" id="leg-length" class="input-field border-blue-300 text-center" placeholder="ASIS ~ 내측복사뼈">
-                        <p class="error-msg" id="leg-length-error">다리 길이를 입력해주세요.</p>
+                        <label>우세발 다리길이 (cm) <span class="text-gray-400 text-xs font-normal">(선택 - Y-Balance 시 필수)</span></label>
+                        <input type="text" inputmode="decimal" id="leg-length" class="input-field" placeholder="ASIS ~ 내측복사뼈">
                     </div>
                 </div>
             </div>
@@ -464,7 +468,6 @@
 
         <!-- 결과 섹션 -->
         <div id="results-section" class="mt-12 hidden animate-fade-in-up">
-            <!-- 요약 헤더 -->
             <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-t-2xl p-8 text-center text-white shadow-lg">
                 <div class="inline-block bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">Analysis Report</div>
                 <h2 class="text-3xl font-bold mb-2">통합 기능 부전 분석 리포트</h2>
@@ -473,13 +476,12 @@
 
             <div class="bg-white p-6 md:p-8 rounded-b-2xl shadow-lg border-x border-b border-gray-200 space-y-8">
                 
-                <!-- 1. 종합 평가 요약 -->
                 <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-slate-500">
                     <h3 class="font-bold text-slate-800 mb-1">📋 종합 평가 요약</h3>
                     <p class="text-sm text-slate-600 leading-relaxed" id="executive-summary"></p>
                 </div>
 
-                <!-- 2. 재활 처방 -->
+                <!-- 재활 처방 -->
                 <div>
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
                         재활: 맞춤형 기능부전 교정 및 운동 처방
@@ -487,14 +489,19 @@
                     <div id="rehab-prescription-content" class="space-y-4"></div>
                     <div class="mt-4 p-3 bg-red-50 text-red-700 text-xs rounded border border-red-100">
                         <strong><i class="fa-solid fa-triangle-exclamation mr-1"></i> 주의사항:</strong> 
-                        통증이 발생하면 즉시 운동을 중단하세요. 본 결과는 보조적 참고 자료이며 전문 의료진의 진단을 대체할 수 없습니다.
+                        통증이 발생하면 즉시 운동을 중단하세요. 본 결과는 보조적 참고 자료입니다.
                     </div>
                 </div>
 
                 <hr class="border-gray-100">
 
-                <!-- 3. 심리 분석 -->
-                <div>
+                 <!-- 1. 신체 구성 분석 (BMI) - NEW -->
+                <div id="bmi-section-result">
+                    <!-- JS Generated -->
+                </div>
+
+                <!-- 2. 심리 분석 -->
+                <div id="psych-section-result">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-l-4 border-cyan-500 pl-3">심리 상태 분석</h3>
                     <ul class="list-disc list-inside space-y-2 text-gray-700 ml-2 mb-4" id="psych-result-list"></ul>
                     
@@ -515,23 +522,22 @@
                     </div>
                 </div>
 
-                <!-- 4. Y-Balance 정량적 -->
-                <div>
+                <!-- Y-Balance 정량적 -->
+                <div id="ybalance-quant-section">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-l-4 border-green-500 pl-3">Y-Balance Test 정량적 분석</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-green-50/50 p-4 rounded-lg" id="ybalance-score-content"></div>
                 </div>
 
-                <!-- 5. Y-Balance 해석 -->
-                <div>
+                <!-- Y-Balance 해석 -->
+                <div id="ybalance-interp-section">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-l-4 border-green-500 pl-3">Y-Balance Test 의미 해석</h3>
                     <ul class="list-disc list-inside space-y-2 text-gray-700 ml-2" id="ybalance-interp-list"></ul>
                 </div>
 
-                <!-- 6. 자세 분석 -->
-                <div>
+                <!-- 자세 분석 -->
+                <div id="posture-section">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 border-l-4 border-purple-500 pl-3">자세 분석</h3>
                     <ul class="list-disc list-inside space-y-2 text-gray-700 ml-2 mb-4" id="posture-result-list"></ul>
-                    
                      <div class="criteria-box">
                         <span class="criteria-title">자세 평가 기준</span>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
@@ -541,7 +547,7 @@
                     </div>
                 </div>
 
-                <!-- 7. 정성적 분석 -->
+                <!-- 정성적 분석 -->
                 <div class="bg-blue-50 border border-blue-100 rounded-lg p-5">
                     <h3 class="font-bold text-blue-800 mb-2"><i class="fa-solid fa-eye mr-2"></i>움직임의 질(Quality) 관찰 포인트</h3>
                     <ul class="list-disc list-inside space-y-1 text-sm text-blue-900/80 ml-1">
@@ -567,7 +573,7 @@
     </div>
 
     <script>
-        // ... (Questions Data & Init Logic) ...
+        // ... (Data & Init Logic) ...
         const efficacyQuestions = [
             { text: '나는 반사능력이 뛰어나다.', positive: true },
             { text: '나는 신체적 움직임이 민첩하지 않고 세련되지도 않다.', positive: false },
@@ -641,27 +647,38 @@
             document.getElementById('progress-bar').style.width = `${pct}%`;
         }
 
-        // --- Analysis Logic ---
         document.getElementById('analyze-btn').addEventListener('click', () => {
-            const legInput = document.getElementById('leg-length');
             const heightInput = document.getElementById('height');
-            const legErr = document.getElementById('leg-length-error');
+            const weightInput = document.getElementById('weight');
+            const ageInput = document.getElementById('age');
+            const genderInput = document.querySelector('input[name="gender"]:checked');
 
             let isValid = true;
+            const check = (el, errId) => {
+                if(!el.value) {
+                    el.classList.add('error');
+                    document.getElementById(errId).style.display = 'block';
+                    isValid = false;
+                } else {
+                    el.classList.remove('error');
+                    document.getElementById(errId).style.display = 'none';
+                }
+            };
             
-            if(!legInput.value) {
-                legInput.classList.add('error');
-                legErr.style.display = 'block';
+            check(heightInput, 'height-error');
+            check(weightInput, 'weight-error');
+            check(ageInput, 'age-error');
+            
+            if(!genderInput) {
+                document.getElementById('gender-error').style.display = 'block';
                 isValid = false;
             } else {
-                legInput.classList.remove('error');
-                legErr.style.display = 'none';
-                if(parseFloat(legInput.value) < 50 || parseFloat(legInput.value) > 130) {
-                    alert("다리 길이가 비정상적인 범위입니다 (50~130cm). 다시 확인해주세요.");
-                    isValid = false;
-                }
+                document.getElementById('gender-error').style.display = 'none';
             }
-            if(heightInput.value && (parseFloat(heightInput.value) < 100 || parseFloat(heightInput.value) > 250)) {
+            
+            if(!isValid) return;
+
+            if(heightInput.value && (parseFloat(heightInput.value) < 50 || parseFloat(heightInput.value) > 250)) {
                  alert("키 입력값이 비정상적입니다."); isValid = false;
             }
             if(!isValid) return;
@@ -684,21 +701,27 @@
         });
 
         function runAnalysis() {
-            // [핵심 수정] 스마트 평균 계산 로직 (1차값만 있어도 OK)
             const getEffectiveValue = (id1, id2) => {
                 const v1 = document.getElementById(id1).value;
                 const v2 = document.getElementById(id2).value;
                 const n1 = parseFloat(v1);
                 const n2 = parseFloat(v2);
-                
                 if(!isNaN(n1) && !isNaN(n2)) return (n1 + n2) / 2;
                 if(!isNaN(n1)) return n1;
                 if(!isNaN(n2)) return n2;
-                return 0; // Default
+                return null; 
             };
 
             const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
-            const getMax = (id1, id2) => Math.max(getVal(id1), getVal(id2));
+            const getMax = (id1, id2) => {
+                 const v1 = document.getElementById(id1).value;
+                 const v2 = document.getElementById(id2).value;
+                 if(!v1 && !v2) return null;
+                 return Math.max(parseFloat(v1)||0, parseFloat(v2)||0);
+            };
+            
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
             const legLen = getVal('leg-length');
 
             const rAnt = getMax('y-right-ant-1', 'y-right-ant-2');
@@ -708,32 +731,75 @@
             const lPm = getMax('y-left-pm-1', 'y-left-pm-2');
             const lPl = getMax('y-left-pl-1', 'y-left-pl-2');
 
-            // [수정] 방향 선택 반영 (절댓값 * 방향)
             const getDirFactor = (name) => document.querySelector(`input[name="${name}"]:checked`).value === 'left' ? -1 : 1;
-            
-            // 1. 값의 크기(절댓값)만 가져옴
-            const pelvisRaw = Math.abs(getEffectiveValue('pelvis-1', 'pelvis-2'));
-            const shoulderRaw = Math.abs(getEffectiveValue('shoulder-1', 'shoulder-2'));
-            // 2. 방향 적용
-            const pelvis = pelvisRaw * getDirFactor('pelvis-dir');
-            const shoulder = shoulderRaw * getDirFactor('shoulder-dir');
+            const pelvisVal = getEffectiveValue('pelvis-1', 'pelvis-2');
+            const shoulderVal = getEffectiveValue('shoulder-1', 'shoulder-2');
             const cva = getEffectiveValue('cva-1', 'cva-2');
             
+            const pelvis = pelvisVal !== null ? Math.abs(pelvisVal) * getDirFactor('pelvis-dir') : null;
+            const shoulder = shoulderVal !== null ? Math.abs(shoulderVal) * getDirFactor('shoulder-dir') : null;
             const stress = parseInt(document.getElementById('stress-level').value);
 
-            // Calc
-            const rComp = ((rAnt + rPm + rPl) / (3 * legLen) * 100).toFixed(1);
-            const lComp = ((lAnt + lPm + lPl) / (3 * legLen) * 100).toFixed(1);
-            const antAsym = Math.abs(rAnt - lAnt).toFixed(1);
-            const pmAsym = Math.abs(rPm - lPm).toFixed(1);
-            const plAsym = Math.abs(rPl - lPl).toFixed(1);
+            const hasYBalance = (rAnt !== null && lAnt !== null) && legLen > 0;
+            let rComp=0, lComp=0, antAsym=0, pmAsym=0, plAsym=0;
 
-            // Efficacy Score
+            if(hasYBalance) {
+                rComp = (( (rAnt||0) + (rPm||0) + (rPl||0) ) / (3 * legLen) * 100).toFixed(1);
+                lComp = (( (lAnt||0) + (lPm||0) + (lPl||0) ) / (3 * legLen) * 100).toFixed(1);
+                antAsym = Math.abs((rAnt||0) - (lAnt||0)).toFixed(1);
+                pmAsym = Math.abs((rPm||0) - (lPm||0)).toFixed(1);
+                plAsym = Math.abs((rPl||0) - (lPl||0)).toFixed(1);
+            }
+
             let effScore = 0, effCount = 0;
             efficacyQuestions.forEach((q, i) => {
                 const el = document.querySelector(`input[name="eq-${i}"]:checked`);
                 if(el) { effCount++; let v = parseInt(el.value); if(!q.positive) v = 6 - v; effScore += v; }
             });
+
+            // --- BMI Calculation & Analysis ---
+            let bmi = 0, bmiStatus = "", bmiColor = "", bmiSol = "";
+            if(height > 0 && weight > 0) {
+                bmi = (weight / ((height/100)**2)).toFixed(1);
+                if(bmi < 18.5) {
+                    bmiStatus = "저체중"; bmiColor = "text-blue-600";
+                    bmiSol = "근육량 증진을 위한 저항성 운동과 충분한 단백질 섭취가 필요합니다.";
+                } else if(bmi <= 22.9) {
+                    bmiStatus = "정상"; bmiColor = "text-green-600";
+                    bmiSol = "현재의 건강한 체중을 유지하기 위해 규칙적인 유산소 및 근력 운동을 지속하세요.";
+                } else if(bmi <= 24.9) {
+                    bmiStatus = "비만 전단계"; bmiColor = "text-orange-500";
+                    bmiSol = "체중 관리를 위해 유산소 운동 비중을 높이고, 식습관 조절을 병행하는 것이 좋습니다.";
+                } else {
+                    bmiStatus = "비만"; bmiColor = "text-red-600";
+                    bmiSol = "관절 부담이 적은 수중 운동이나 가벼운 유산소부터 시작하여 점진적으로 강도를 높이세요. 전문가 상담을 권장합니다.";
+                }
+                
+                // BMI Section HTML Injection
+                document.getElementById('bmi-section-result').innerHTML = `
+                    <div class="card border-l-4 border-indigo-400">
+                        <h3 class="section-title text-indigo-title mb-4">신체 구성 분석 (BMI)</h3>
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <div class="text-center flex-1">
+                                <span class="text-gray-500 text-sm block mb-1">나의 BMI 지수</span>
+                                <div class="text-4xl font-bold ${bmiColor}">${bmi} <span class="text-lg text-gray-400 font-normal">kg/m²</span></div>
+                                <span class="inline-block mt-2 px-3 py-1 bg-gray-100 rounded-full text-sm font-bold ${bmiColor}">${bmiStatus}</span>
+                            </div>
+                            <div class="flex-[2] w-full border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
+                                <h4 class="font-bold text-gray-700 mb-2 flex items-center"><i class="fa-solid fa-lightbulb text-yellow-400 mr-2"></i>맞춤 솔루션</h4>
+                                <p class="text-sm text-gray-600 mb-4 leading-relaxed">${bmiSol}</p>
+                                <div class="bg-gray-50 p-3 rounded text-xs text-gray-500">
+                                    <span class="font-bold block mb-1 text-gray-400">[참고] 아시아-태평양 비만 기준</span>
+                                    <div class="flex justify-between mb-1"><span>저체중</span><span>&lt; 18.5</span></div>
+                                    <div class="flex justify-between mb-1"><span>정상</span><span>18.5 ~ 22.9</span></div>
+                                    <div class="flex justify-between mb-1"><span>비만 전단계</span><span>23 ~ 24.9</span></div>
+                                    <div class="flex justify-between"><span>비만</span><span>&ge; 25</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
 
             // --- RX Logic ---
             let rehabHTML = "";
@@ -757,40 +823,58 @@
 
             let issues = 0;
 
-            if(cva > 0 && cva < 50) {
+            // BMI Issue (Obesity)
+            if(bmi >= 25) {
+                issues++;
+                summaryText.push("체중 관리 필요");
+                rehabHTML += createRxItem(
+                    "체중 감량 및 관절 보호",
+                    "과체중은 척추와 무릎 관절에 부하를 줍니다. 충격이 적은 유산소 운동과 코어 강화가 우선되어야 합니다.",
+                    ["Footwork (Reformer)", "Swimming (Mat)", "Leg Press Standing (Chair)"]
+                );
+            }
+
+            if(cva !== null && cva > 0 && cva < 50) {
                 issues++;
                 summaryText.push("거북목 자세");
                 rehabHTML += createRxItem("거북목(Forward Head) 교정", "경추 심부 굴곡근(Deep Neck Flexor) 강화와 흉추 신전 가동성 확보가 필요합니다.", ["Swan prep (Ladder barrel)", "Chest Expansion (Cadillac)", "Breast Stroke Prep (Mat)"]);
             }
-            if(antAsym > 4.0) {
-                issues++;
-                summaryText.push("발목 가동성 비대칭");
-                rehabHTML += createRxItem("발목 가동성 제한 및 비대칭", "전방 도달 거리가 짧은 쪽의 종아리 근육(Gastrocnemius/Soleus) 단축이 의심됩니다.", ["Calf Raises (Reformer)", "Running (Reformer)", "Heel Squeeze Prone (Mat)"]);
+
+            if(hasYBalance) {
+                if(antAsym > 4.0) {
+                    issues++;
+                    summaryText.push("발목 가동성 비대칭");
+                    rehabHTML += createRxItem("발목 가동성 제한 및 비대칭", "전방 도달 거리가 짧은 쪽의 종아리 근육(Gastrocnemius/Soleus) 단축이 의심됩니다.", ["Calf Raises (Reformer)", "Running (Reformer)", "Heel Squeeze Prone (Mat)"]);
+                }
+                if(pmAsym > 6.0 || plAsym > 6.0) {
+                    issues++;
+                    summaryText.push("둔근 약화 및 고관절 불안정");
+                    rehabHTML += createRxItem("둔근 약화 및 고관절 불안정", "지지하는 다리의 중둔근 및 고관절 외회전근 약화로 인한 동적 밸런스 저하입니다.", ["Shoulder Bridge (Mat)", "Side Kick (Mat)", "Leg Press Standing (Chair)", "Frog (Reformer)"]);
+                }
             }
-            if(pmAsym > 6.0 || plAsym > 6.0) {
-                issues++;
-                summaryText.push("둔근 약화 및 고관절 불안정");
-                rehabHTML += createRxItem("둔근 약화 및 고관절 불안정", "지지하는 다리의 중둔근 및 고관절 외회전근 약화로 인한 동적 밸런스 저하입니다.", ["Shoulder Bridge (Mat)", "Side Kick (Mat)", "Leg Press Standing (Chair)", "Frog (Reformer)"]);
-            }
-            if(Math.abs(pelvis) >= 1.5 || Math.abs(shoulder) >= 1.5) {
+
+            if((pelvis !== null && Math.abs(pelvis) >= 1.5) || (shoulder !== null && Math.abs(shoulder) >= 1.5)) {
                 issues++;
                 summaryText.push("신체 좌우 불균형");
                 rehabHTML += createRxItem("신체 불균형 및 척추 측만 경향", "골반과 어깨의 높이 차이는 척추의 기능적 측만을 유발할 수 있습니다.", ["Mermaid (Reformer)", "Side Bend (Mat)", "Spine Twist (Mat)", "Saw (Mat)"]);
             }
+
             if(stress >= 7) {
                 issues++;
                 summaryText.push("높은 스트레스");
                 rehabHTML += createRxItem("스트레스성 근육 과긴장 완화", "높은 스트레스는 상부 승모근과 목 근육의 과긴장을 유발합니다.", ["Breathing", "Arm Circles (Reformer)", "Cat Stretch (Mat)"]);
             }
 
-            if(issues === 0) {
+            if(issues === 0 && (hasYBalance || cva !== null || pelvis !== null)) {
                 summaryText.push("매우 양호한 신체 상태");
-                rehabHTML = `<div class="text-center p-8 bg-green-50 rounded-xl border border-green-100"><p class="text-green-800 font-bold text-lg">현재 신체 기능 상태가 매우 양호합니다!</p><div class="mt-4"><span class="pilates-badge">Teaser</span><span class="pilates-badge">Control Balance</span><span class="pilates-badge">Coordination</span></div></div>`;
+                rehabHTML = `<div class="text-center p-8 bg-green-50 rounded-xl border border-green-100"><p class="text-green-800 font-bold text-lg">현재 측정된 항목들에서 신체 기능 상태가 매우 양호합니다!</p><div class="mt-4"><span class="pilates-badge">Teaser</span><span class="pilates-badge">Control Balance</span><span class="pilates-badge">Coordination</span></div></div>`;
+            } else if (issues === 0) {
+                 rehabHTML = `<div class="text-center p-8 text-gray-500">입력된 데이터가 충분하지 않아 처방을 생성할 수 없습니다.</div>`;
             }
 
             document.getElementById('rehab-prescription-content').innerHTML = rehabHTML;
             const summaryElem = document.getElementById('executive-summary');
-            summaryElem.innerHTML = issues > 0 ? `분석 결과, 귀하의 주요 특징은 <strong>[${summaryText.join(', ')}]</strong>입니다.` : "분석 결과, <strong>신체 불균형이나 기능 부전이 발견되지 않았습니다.</strong>";
+            summaryElem.innerHTML = issues > 0 ? `분석 결과, 귀하의 주요 특징은 <strong>[${summaryText.join(', ')}]</strong>입니다.` : (summaryText.length > 0 ? "분석 결과, <strong>신체 불균형이나 기능 부전이 발견되지 않았습니다.</strong>" : "데이터가 입력되지 않았습니다.");
 
             // Psych
             let effMsg = "평가 미완료";
@@ -800,93 +884,63 @@
             }
             document.getElementById('psych-result-list').innerHTML = `<li><strong class="text-gray-900">순간 스트레스:</strong> <span class="result-text-blue">${stress}점</span> / 10점</li><li><strong class="text-gray-900">신체적 자기효능감:</strong> <span class="result-text-blue">${effScore}점</span> / 110점 <span class="text-sm text-gray-500 ml-2">(${effMsg})</span></li>`;
 
-            // Y-Balance Scores
-            document.getElementById('ybalance-score-content').innerHTML = `
-                <div class="text-center"><h4 class="font-bold text-gray-600 mb-2">종합 점수 (Composite)</h4><div class="flex justify-center gap-8"><div><span class="text-xs text-gray-400 block">Right</span><span class="text-xl font-bold text-blue-600">${rComp}%</span></div><div><span class="text-xs text-gray-400 block">Left</span><span class="text-xl font-bold text-blue-600">${lComp}%</span></div></div></div>
-                <div class="text-center border-l border-green-200 pl-4"><h4 class="font-bold text-gray-600 mb-2">비대칭 (Asymmetry)</h4><div class="flex justify-around text-sm"><div><span class="block text-gray-400">Ant</span><span class="${antAsym > 4 ? 'text-red-600 font-bold' : 'text-gray-700'}">${antAsym}cm</span></div><div><span class="block text-gray-400">PM</span><span class="${pmAsym > 6 ? 'text-red-600 font-bold' : 'text-gray-700'}">${pmAsym}cm</span></div><div><span class="block text-gray-400">PL</span><span class="${plAsym > 6 ? 'text-red-600 font-bold' : 'text-gray-700'}">${plAsym}cm</span></div></div></div>
-            `;
+            // Y-Balance Sections (Hide if no data)
+            if (hasYBalance) {
+                document.getElementById('ybalance-quant-section').style.display = 'block';
+                document.getElementById('ybalance-interp-section').style.display = 'block';
+                document.getElementById('ybalance-score-content').innerHTML = `
+                    <div class="text-center"><h4 class="font-bold text-gray-600 mb-2">종합 점수 (Composite)</h4><div class="flex justify-center gap-8"><div><span class="text-xs text-gray-400 block">Right</span><span class="text-xl font-bold text-blue-600">${rComp}%</span></div><div><span class="text-xs text-gray-400 block">Left</span><span class="text-xl font-bold text-blue-600">${lComp}%</span></div></div></div>
+                    <div class="text-center border-l border-green-200 pl-4"><h4 class="font-bold text-gray-600 mb-2">비대칭 (Asymmetry)</h4><div class="flex justify-around text-sm"><div><span class="block text-gray-400">Ant</span><span class="${antAsym > 4 ? 'text-red-600 font-bold' : 'text-gray-700'}">${antAsym}cm</span></div><div><span class="block text-gray-400">PM</span><span class="${pmAsym > 6 ? 'text-red-600 font-bold' : 'text-gray-700'}">${pmAsym}cm</span></div><div><span class="block text-gray-400">PL</span><span class="${plAsym > 6 ? 'text-red-600 font-bold' : 'text-gray-700'}">${plAsym}cm</span></div></div></div>
+                `;
+                let antInterp = antAsym > 4 ? "4cm 초과 (주의: 발목 가동성 제한)" : "정상 범위 (대칭)";
+                let pmInterp = (pmAsym > 6 || plAsym > 6) ? "6cm 초과 (주의: 둔근 안정성 부족)" : "정상 범위 (안정성 양호)";
+                document.getElementById('ybalance-interp-list').innerHTML = `<li><strong>앞쪽(Ant) 비대칭:</strong> ${antInterp}</li><li><strong>후방(PM/PL) 비대칭:</strong> ${pmInterp}</li>`;
+            } else {
+                document.getElementById('ybalance-quant-section').style.display = 'none';
+                document.getElementById('ybalance-interp-section').style.display = 'none';
+            }
 
-            // Interpretations
-            let antInterp = antAsym > 4 ? "4cm 초과 (주의: 발목 가동성 제한)" : "정상 범위 (대칭)";
-            let pmInterp = (pmAsym > 6 || plAsym > 6) ? "6cm 초과 (주의: 둔근 안정성 부족)" : "정상 범위 (안정성 양호)";
-            document.getElementById('ybalance-interp-list').innerHTML = `<li><strong>앞쪽(Ant) 비대칭:</strong> ${antInterp}</li><li><strong>후방(PM/PL) 비대칭:</strong> ${pmInterp}</li>`;
-
-            // Posture
-            let pelMsg = Math.abs(pelvis) < 1.5 ? "정상" : "불균형 (주의)";
-            let shoulMsg = Math.abs(shoulder) < 1.5 ? "정상" : "불균형 (주의)";
-            let cvaMsg = cva >= 50 ? "정상" : "거북목 (주의)";
-            document.getElementById('posture-result-list').innerHTML = `<li><strong>골반 기울기:</strong> ${pelvis.toFixed(1)}° (${pelMsg})</li><li><strong>어깨 기울기:</strong> ${shoulder.toFixed(1)}° (${shoulMsg})</li><li><strong>머리척추각(CVA):</strong> ${cva.toFixed(1)}° (${cvaMsg})</li>`;
+            // Posture Section (Hide if no data)
+            if(pelvis !== null || shoulder !== null || cva !== null) {
+                document.getElementById('posture-section').style.display = 'block';
+                let html = "";
+                if(pelvis !== null) html += `<li><strong>골반 기울기:</strong> ${pelvis.toFixed(1)}° (${Math.abs(pelvis) < 1.5 ? "정상" : "불균형 (주의)"})</li>`;
+                if(shoulder !== null) html += `<li><strong>어깨 기울기:</strong> ${shoulder.toFixed(1)}° (${Math.abs(shoulder) < 1.5 ? "정상" : "불균형 (주의)"})</li>`;
+                if(cva !== null) html += `<li><strong>머리척추각(CVA):</strong> ${cva.toFixed(1)}° (${cva >= 50 ? "정상" : "거북목 (주의)"})</li>`;
+                document.getElementById('posture-result-list').innerHTML = html;
+            } else {
+                document.getElementById('posture-section').style.display = 'none';
+            }
         }
 
-        // --- Save & Share Logic (Fixed for Rendering) ---
+        // --- Save & Share ---
         const handleCapture = (callback) => {
             const btn = document.getElementById('save-image-btn');
             const origin = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
-
-            // 1. 텍스트/숫자 인풋을 div로 교체 (렌더링 깨짐 방지)
-            const inputs = document.querySelectorAll('#capture-area input[type="text"], #capture-area input[type="number"]');
-            const originalStyles = [];
-
-            inputs.forEach(input => {
-                const div = document.createElement('div');
-                div.innerText = input.value;
-                div.className = input.className; // 기존 클래스 복사
-                
-                // input 스타일과 유사하게 보이도록 강제 스타일링
-                div.style.display = 'flex';
-                div.style.alignItems = 'center';
-                // 텍스트 정렬 확인
-                if (input.classList.contains('text-center') || window.getComputedStyle(input).textAlign === 'center') {
-                    div.style.justifyContent = 'center';
+            
+            document.querySelectorAll('input').forEach(input => {
+                if(input.type === 'radio' || input.type === 'checkbox') {
+                    if(input.checked) input.setAttribute('checked', 'checked');
                 } else {
-                    div.style.justifyContent = 'flex-start';
+                    input.setAttribute('value', input.value);
                 }
-                div.style.height = input.offsetHeight + 'px';
-                div.style.boxSizing = 'border-box';
-
-                originalStyles.push({
-                    element: input,
-                    parent: input.parentNode,
-                    replacement: div
-                });
-
-                input.style.display = 'none';
-                input.parentNode.insertBefore(div, input);
             });
 
-            // 2. 라디오/체크박스 처리
-            const radios = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
-            radios.forEach(r => {
-                if(r.checked) r.setAttribute('checked', 'checked');
-            });
-
-            // 3. 캡처 시작
             window.scrollTo(0,0);
+
             html2canvas(document.getElementById('capture-area'), {
                 scale: 2, 
                 useCORS: true, 
                 backgroundColor: "#f9fafb",
                 scrollY: 0,
-                windowHeight: document.getElementById('capture-area').scrollHeight + 100,
+                windowHeight: document.getElementById('capture-area').scrollHeight + 100, 
                 ignoreElements: (el) => el.id === 'save-image-btn' || el.id === 'share-btn'
             }).then(canvas => {
-                // 4. 복구 (Revert)
-                originalStyles.forEach(item => {
-                    item.replacement.remove();
-                    item.element.style.display = ''; // 원래대로 복구
-                });
-                radios.forEach(r => r.removeAttribute('checked'));
-
                 btn.innerHTML = origin;
                 callback(canvas);
             }).catch(err => {
                 console.error(err);
-                // 에러 발생 시에도 복구 시도
-                originalStyles.forEach(item => {
-                    if(item.replacement.parentNode) item.replacement.remove();
-                    item.element.style.display = '';
-                });
                 btn.innerHTML = origin;
                 alert("이미지 생성 중 오류가 발생했습니다.");
             });
@@ -895,8 +949,7 @@
         document.getElementById('save-image-btn').addEventListener('click', () => {
             handleCapture((canvas) => {
                 const link = document.createElement("a");
-                const name = document.getElementById('name').value || 'Report';
-                link.download = `Result_${name}.png`;
+                link.download = `Result_${document.getElementById('name').value || 'Report'}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             });
@@ -906,6 +959,7 @@
             handleCapture((canvas) => {
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], "report.png", { type: "image/png" });
+                    
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
@@ -913,11 +967,13 @@
                                 title: '신체 분석 리포트',
                                 text: '나의 신체 및 심리 통합 분석 결과입니다.'
                             });
-                        } catch (err) { console.log(err); }
+                        } catch (err) {
+                            console.log("Share failed/cancelled:", err);
+                        }
                     } else {
                         alert("공유 기능을 지원하지 않는 브라우저입니다. 이미지로 저장됩니다.");
                         const link = document.createElement("a");
-                        link.download = `Result_${document.getElementById('name').value}.png`;
+                        link.download = `Result_${document.getElementById('name').value || 'Report'}.png`;
                         link.href = canvas.toDataURL("image/png");
                         link.click();
                     }
