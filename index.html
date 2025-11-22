@@ -86,6 +86,9 @@
             background-color: #f9fafb;
             transition: all 0.2s;
             font-size: 0.95rem;
+            /* 높이 고정 (캡처 시 레이아웃 흔들림 방지) */
+            min-height: 48px; 
+            box-sizing: border-box;
         }
         .input-field:focus {
             outline: none;
@@ -252,16 +255,16 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="input-group">
                             <label>키 (cm)</label>
-                            <input type="text" inputmode="decimal" id="height" class="input-field" placeholder="175">
+                            <input type="text" inputmode="decimal" id="height" class="input-field text-center" placeholder="175">
                         </div>
                         <div class="input-group">
                             <label>몸무게 (kg)</label>
-                            <input type="text" inputmode="decimal" id="weight" class="input-field" placeholder="70">
+                            <input type="text" inputmode="decimal" id="weight" class="input-field text-center" placeholder="70">
                         </div>
                     </div>
                     <div class="input-group">
                         <label>만 나이</label>
-                        <input type="text" inputmode="decimal" id="age" class="input-field" placeholder="25">
+                        <input type="text" inputmode="decimal" id="age" class="input-field text-center" placeholder="25">
                     </div>
                     <div class="input-group">
                         <label>성별</label>
@@ -291,7 +294,7 @@
                     </div>
                     <div class="input-group">
                         <label class="text-blue-600">우세발 다리길이 (cm) *필수</label>
-                        <input type="text" inputmode="decimal" id="leg-length" class="input-field border-blue-300" placeholder="ASIS ~ 내측복사뼈">
+                        <input type="text" inputmode="decimal" id="leg-length" class="input-field border-blue-300 text-center" placeholder="ASIS ~ 내측복사뼈">
                         <p class="error-msg" id="leg-length-error">다리 길이를 입력해주세요.</p>
                     </div>
                 </div>
@@ -815,36 +818,75 @@
             document.getElementById('posture-result-list').innerHTML = `<li><strong>골반 기울기:</strong> ${pelvis.toFixed(1)}° (${pelMsg})</li><li><strong>어깨 기울기:</strong> ${shoulder.toFixed(1)}° (${shoulMsg})</li><li><strong>머리척추각(CVA):</strong> ${cva.toFixed(1)}° (${cvaMsg})</li>`;
         }
 
-        // --- Save & Share ---
+        // --- Save & Share Logic (Fixed for Rendering) ---
         const handleCapture = (callback) => {
             const btn = document.getElementById('save-image-btn');
             const origin = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
-            
-            // [수정] 모든 Input Value를 속성으로 고정 (html2canvas 렌더링 오류 방지)
-            document.querySelectorAll('input').forEach(input => {
-                if(input.type === 'radio' || input.type === 'checkbox') {
-                    if(input.checked) input.setAttribute('checked', 'checked');
+
+            // 1. 텍스트/숫자 인풋을 div로 교체 (렌더링 깨짐 방지)
+            const inputs = document.querySelectorAll('#capture-area input[type="text"], #capture-area input[type="number"]');
+            const originalStyles = [];
+
+            inputs.forEach(input => {
+                const div = document.createElement('div');
+                div.innerText = input.value;
+                div.className = input.className; // 기존 클래스 복사
+                
+                // input 스타일과 유사하게 보이도록 강제 스타일링
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                // 텍스트 정렬 확인
+                if (input.classList.contains('text-center') || window.getComputedStyle(input).textAlign === 'center') {
+                    div.style.justifyContent = 'center';
                 } else {
-                    input.setAttribute('value', input.value);
+                    div.style.justifyContent = 'flex-start';
                 }
+                div.style.height = input.offsetHeight + 'px';
+                div.style.boxSizing = 'border-box';
+
+                originalStyles.push({
+                    element: input,
+                    parent: input.parentNode,
+                    replacement: div
+                });
+
+                input.style.display = 'none';
+                input.parentNode.insertBefore(div, input);
             });
 
-            // [수정] 스크롤 초기화 및 전체 높이 캡처 설정
-            window.scrollTo(0,0);
+            // 2. 라디오/체크박스 처리
+            const radios = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+            radios.forEach(r => {
+                if(r.checked) r.setAttribute('checked', 'checked');
+            });
 
+            // 3. 캡처 시작
+            window.scrollTo(0,0);
             html2canvas(document.getElementById('capture-area'), {
                 scale: 2, 
                 useCORS: true, 
                 backgroundColor: "#f9fafb",
                 scrollY: 0,
-                windowHeight: document.getElementById('capture-area').scrollHeight + 100, // 전체 높이 확보
+                windowHeight: document.getElementById('capture-area').scrollHeight + 100,
                 ignoreElements: (el) => el.id === 'save-image-btn' || el.id === 'share-btn'
             }).then(canvas => {
+                // 4. 복구 (Revert)
+                originalStyles.forEach(item => {
+                    item.replacement.remove();
+                    item.element.style.display = ''; // 원래대로 복구
+                });
+                radios.forEach(r => r.removeAttribute('checked'));
+
                 btn.innerHTML = origin;
                 callback(canvas);
             }).catch(err => {
                 console.error(err);
+                // 에러 발생 시에도 복구 시도
+                originalStyles.forEach(item => {
+                    if(item.replacement.parentNode) item.replacement.remove();
+                    item.element.style.display = '';
+                });
                 btn.innerHTML = origin;
                 alert("이미지 생성 중 오류가 발생했습니다.");
             });
@@ -853,18 +895,17 @@
         document.getElementById('save-image-btn').addEventListener('click', () => {
             handleCapture((canvas) => {
                 const link = document.createElement("a");
-                link.download = `Result_${document.getElementById('name').value || 'Report'}.png`;
+                const name = document.getElementById('name').value || 'Report';
+                link.download = `Result_${name}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             });
         });
 
-        // [수정] 공유하기 Fallback 처리
         document.getElementById('share-btn').addEventListener('click', () => {
             handleCapture((canvas) => {
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], "report.png", { type: "image/png" });
-                    
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
@@ -872,14 +913,11 @@
                                 title: '신체 분석 리포트',
                                 text: '나의 신체 및 심리 통합 분석 결과입니다.'
                             });
-                        } catch (err) {
-                            console.log("Share failed/cancelled:", err);
-                        }
+                        } catch (err) { console.log(err); }
                     } else {
-                        // 지원하지 않는 경우 (카카오톡 인앱 등) 자동 저장 유도
                         alert("공유 기능을 지원하지 않는 브라우저입니다. 이미지로 저장됩니다.");
                         const link = document.createElement("a");
-                        link.download = `Result_${document.getElementById('name').value || 'Report'}.png`;
+                        link.download = `Result_${document.getElementById('name').value}.png`;
                         link.href = canvas.toDataURL("image/png");
                         link.click();
                     }
