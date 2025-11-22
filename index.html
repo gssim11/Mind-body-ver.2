@@ -104,6 +104,36 @@
             display: none;
         }
 
+        /* Direction Radio Style */
+        .dir-radio-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .dir-radio-label {
+            flex: 1;
+            cursor: pointer;
+        }
+        .dir-radio-input {
+            display: none;
+        }
+        .dir-radio-box {
+            display: block;
+            text-align: center;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+        .dir-radio-input:checked + .dir-radio-box {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
         /* Rx Box */
         .rx-box {
             background-color: #f0f9ff;
@@ -273,7 +303,6 @@
                     <div class="section-icon bg-green-100 text-green-600"><i class="fa-solid fa-shoe-prints"></i></div>
                     <div>
                         <h2 class="section-title">Y-Balance (오른쪽)</h2>
-                        <!-- [수정] 가독성 색상 변경 -->
                         <p class="text-sm text-orange-600 font-extrabold mt-1">* 오른발 지지 / 왼발 뻗기</p>
                     </div>
                 </div>
@@ -308,7 +337,6 @@
                     <div class="section-icon bg-green-100 text-green-600"><i class="fa-solid fa-shoe-prints" style="transform: scaleX(-1);"></i></div>
                     <div>
                         <h2 class="section-title">Y-Balance (왼쪽)</h2>
-                         <!-- [수정] 가독성 색상 변경 -->
                         <p class="text-sm text-orange-600 font-extrabold mt-1">* 왼발 지지 / 오른발 뻗기</p>
                     </div>
                 </div>
@@ -344,22 +372,44 @@
                     <h2 class="section-title">정적 자세 평가</h2>
                 </div>
                 <div class="space-y-5">
+                    <!-- 골반 높이 차이 수정 (방향 선택 추가) -->
                     <div class="input-group">
-                        <label>골반 높이 차이 (Tilt °)</label>
-                        <p class="text-xs text-gray-400 mb-2">(-) 왼쪽 낮음 / (+) 오른쪽 낮음</p>
+                        <label class="mb-2">골반 높이 차이 (Tilt °)</label>
+                        <div class="dir-radio-group">
+                            <label class="dir-radio-label">
+                                <input type="radio" name="pelvis-dir" value="left" class="dir-radio-input" checked>
+                                <span class="dir-radio-box">왼쪽 낮음 (-)</span>
+                            </label>
+                            <label class="dir-radio-label">
+                                <input type="radio" name="pelvis-dir" value="right" class="dir-radio-input">
+                                <span class="dir-radio-box">오른쪽 낮음 (+)</span>
+                            </label>
+                        </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" inputmode="decimal" id="pelvis-1" class="input-field text-center" placeholder="1차">
-                            <input type="text" inputmode="decimal" id="pelvis-2" class="input-field text-center" placeholder="2차">
+                            <input type="text" inputmode="decimal" id="pelvis-1" class="input-field text-center" placeholder="1차 (숫자만)">
+                            <input type="text" inputmode="decimal" id="pelvis-2" class="input-field text-center" placeholder="2차 (숫자만)">
                         </div>
                     </div>
+
+                    <!-- 어깨 높이 차이 수정 (방향 선택 추가) -->
                     <div class="input-group">
-                        <label>어깨 높이 차이 (Tilt °)</label>
-                        <p class="text-xs text-gray-400 mb-2">(-) 왼쪽 낮음 / (+) 오른쪽 낮음</p>
+                        <label class="mb-2">어깨 높이 차이 (Tilt °)</label>
+                        <div class="dir-radio-group">
+                            <label class="dir-radio-label">
+                                <input type="radio" name="shoulder-dir" value="left" class="dir-radio-input" checked>
+                                <span class="dir-radio-box">왼쪽 낮음 (-)</span>
+                            </label>
+                            <label class="dir-radio-label">
+                                <input type="radio" name="shoulder-dir" value="right" class="dir-radio-input">
+                                <span class="dir-radio-box">오른쪽 낮음 (+)</span>
+                            </label>
+                        </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" inputmode="decimal" id="shoulder-1" class="input-field text-center" placeholder="1차">
-                            <input type="text" inputmode="decimal" id="shoulder-2" class="input-field text-center" placeholder="2차">
+                            <input type="text" inputmode="decimal" id="shoulder-1" class="input-field text-center" placeholder="1차 (숫자만)">
+                            <input type="text" inputmode="decimal" id="shoulder-2" class="input-field text-center" placeholder="2차 (숫자만)">
                         </div>
                     </div>
+
                     <div class="input-group">
                         <label class="text-red-600">머리척추각 (CVA °)</label>
                         <p class="text-xs text-gray-400 mb-2">거북목 평가 (정상: 50° 이상)</p>
@@ -514,7 +564,7 @@
     </div>
 
     <script>
-        // ... (Questions Data & Init Logic - EfficacyQuestions, Date, Slider) ...
+        // ... (Questions Data & Init Logic) ...
         const efficacyQuestions = [
             { text: '나는 반사능력이 뛰어나다.', positive: true },
             { text: '나는 신체적 움직임이 민첩하지 않고 세련되지도 않다.', positive: false },
@@ -631,24 +681,21 @@
         });
 
         function runAnalysis() {
-            // [수정] 1차 값만 있어도 계산되는 로직 적용 (getEffectiveValue)
+            // [핵심 수정] 스마트 평균 계산 로직 (1차값만 있어도 OK)
             const getEffectiveValue = (id1, id2) => {
                 const v1 = document.getElementById(id1).value;
                 const v2 = document.getElementById(id2).value;
                 const n1 = parseFloat(v1);
                 const n2 = parseFloat(v2);
-
+                
                 if(!isNaN(n1) && !isNaN(n2)) return (n1 + n2) / 2;
                 if(!isNaN(n1)) return n1;
-                // [수정] 2차값만 있어도 동작하도록 수정
                 if(!isNaN(n2)) return n2;
                 return 0; // Default
             };
 
-            // [수정] Y-Balance는 Max값 사용 (기존 유지)
             const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
             const getMax = (id1, id2) => Math.max(getVal(id1), getVal(id2));
-            
             const legLen = getVal('leg-length');
 
             const rAnt = getMax('y-right-ant-1', 'y-right-ant-2');
@@ -658,10 +705,17 @@
             const lPm = getMax('y-left-pm-1', 'y-left-pm-2');
             const lPl = getMax('y-left-pl-1', 'y-left-pl-2');
 
-            // [수정] 스마트 평균 적용
-            const pelvis = getEffectiveValue('pelvis-1', 'pelvis-2');
-            const shoulder = getEffectiveValue('shoulder-1', 'shoulder-2');
+            // [수정] 방향 선택 반영 (절댓값 * 방향)
+            const getDirFactor = (name) => document.querySelector(`input[name="${name}"]:checked`).value === 'left' ? -1 : 1;
+            
+            // 1. 값의 크기(절댓값)만 가져옴
+            const pelvisRaw = Math.abs(getEffectiveValue('pelvis-1', 'pelvis-2'));
+            const shoulderRaw = Math.abs(getEffectiveValue('shoulder-1', 'shoulder-2'));
+            // 2. 방향 적용
+            const pelvis = pelvisRaw * getDirFactor('pelvis-dir');
+            const shoulder = shoulderRaw * getDirFactor('shoulder-dir');
             const cva = getEffectiveValue('cva-1', 'cva-2');
+            
             const stress = parseInt(document.getElementById('stress-level').value);
 
             // Calc
@@ -761,14 +815,13 @@
             document.getElementById('posture-result-list').innerHTML = `<li><strong>골반 기울기:</strong> ${pelvis.toFixed(1)}° (${pelMsg})</li><li><strong>어깨 기울기:</strong> ${shoulder.toFixed(1)}° (${shoulMsg})</li><li><strong>머리척추각(CVA):</strong> ${cva.toFixed(1)}° (${cvaMsg})</li>`;
         }
 
-        // --- Save & Share (Fixing partial render) ---
+        // --- Save & Share ---
         const handleCapture = (callback) => {
             const btn = document.getElementById('save-image-btn');
             const origin = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
             
-            // [수정] 캡처 시 입력값 잘림 방지를 위한 전처리
-            // 모든 input의 현재 값을 속성에 명시 (html2canvas가 value 속성을 더 잘 읽음)
+            // [수정] 모든 Input Value를 속성으로 고정 (html2canvas 렌더링 오류 방지)
             document.querySelectorAll('input').forEach(input => {
                 if(input.type === 'radio' || input.type === 'checkbox') {
                     if(input.checked) input.setAttribute('checked', 'checked');
@@ -777,15 +830,15 @@
                 }
             });
 
-            // [수정] 스크롤 문제 해결을 위해 스크롤을 최상단으로 이동
+            // [수정] 스크롤 초기화 및 전체 높이 캡처 설정
             window.scrollTo(0,0);
 
             html2canvas(document.getElementById('capture-area'), {
                 scale: 2, 
                 useCORS: true, 
                 backgroundColor: "#f9fafb",
-                scrollY: 0, // 스크롤 위치 초기화하여 캡처
-                windowHeight: document.getElementById('capture-area').scrollHeight + 100, // 전체 높이 지정
+                scrollY: 0,
+                windowHeight: document.getElementById('capture-area').scrollHeight + 100, // 전체 높이 확보
                 ignoreElements: (el) => el.id === 'save-image-btn' || el.id === 'share-btn'
             }).then(canvas => {
                 btn.innerHTML = origin;
@@ -806,7 +859,7 @@
             });
         });
 
-        // [수정] 공유하기 오류 시 자동 다운로드로 전환 (Fallback)
+        // [수정] 공유하기 Fallback 처리
         document.getElementById('share-btn').addEventListener('click', () => {
             handleCapture((canvas) => {
                 canvas.toBlob(async (blob) => {
@@ -820,10 +873,10 @@
                                 text: '나의 신체 및 심리 통합 분석 결과입니다.'
                             });
                         } catch (err) {
-                            console.log("Share failed or cancelled:", err);
+                            console.log("Share failed/cancelled:", err);
                         }
                     } else {
-                        // 공유 미지원 시 안내 후 저장
+                        // 지원하지 않는 경우 (카카오톡 인앱 등) 자동 저장 유도
                         alert("공유 기능을 지원하지 않는 브라우저입니다. 이미지로 저장됩니다.");
                         const link = document.createElement("a");
                         link.download = `Result_${document.getElementById('name').value || 'Report'}.png`;
